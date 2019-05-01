@@ -1,0 +1,224 @@
+/*****************************************
+ * Roboholics - 
+ * 1ο Γενικό Λύκειο Καβάλας
+ * Ρομπότ-Οδηγός για τυφλούς V2 
+ **************************************/
+
+
+#define enA 9
+#define enB 10
+
+//συνδέσεις των 4 Ultrasonic Sensors (pins)
+const int trigPinFront = 12;
+const int echoPinFront = 11;
+const int trigPinLeft = 24;
+const int echoPinLeft = 26;
+const int trigPinRight = 53;
+const int echoPinRight = 52;
+const int trigPinDown = 51;
+const int echoPinDown = 50;
+
+
+//Δήλωση μεταβλητών για την χρήση των Ultrasonic Sensors
+long durationFront;
+int distanceFront;
+long durationLeft;
+int distanceLeft;
+long durationRight;
+int distanceRight;
+long durationDown;
+int distanceDown;
+
+const int minFrontDistance = 20;
+
+//Συνδέσεις με τον Motor driver L298NMotor driver L298N (pins)
+int L1 = 4, L2 = 5, L3 = 6, L4 = 7; 
+
+void setup()
+{                
+  // initialize the digital pins we will use as an output in L298NMotor.
+  pinMode(enA, OUTPUT);
+  pinMode(enB, OUTPUT);
+  pinMode(L1, OUTPUT);     
+  pinMode(L2, OUTPUT);     
+  pinMode(L3, OUTPUT);     
+  pinMode(L4, OUTPUT);
+  Serial.begin(9600);
+
+  // Initialize the digital pins  for the ultrasonic sensors 
+  pinMode(trigPinFront, OUTPUT);
+  pinMode(echoPinFront, INPUT);
+  pinMode(trigPinLeft, OUTPUT);
+  pinMode(echoPinLeft, INPUT);
+  pinMode(trigPinRight, OUTPUT);
+  pinMode(echoPinRight, INPUT);
+  pinMode(trigPinDown, OUTPUT);
+  pinMode(echoPinDown, INPUT);
+}
+
+// the loop routine runs over and over again forever:
+// main program
+void loop()
+{
+  sensorRead();
+  Serial.print(distanceFront);
+  sensorReadLeft();
+  Serial.print(distanceLeft);
+  sensorReadRight();
+  Serial.print(distanceRight);
+  sensorReadDown();
+  Serial.print(distanceDown);
+
+//έλεγχος των αποστάσεων απο τους σένσορες και επιλογή της σωστής κατεύθυνσης
+
+ if ((distanceFront <= 12)|| (distanceRight <= 12) || (distanceLeft <= 12) )
+ {
+   goBack();
+   if (distanceLeft <= distanceRight)
+   {
+    turnRight();
+   }
+   else
+   {
+    turnLeft();
+   }
+ }
+ else
+ {
+   goStraight();
+ }
+delay(1000);
+}
+
+
+//Διαβασμα και υπολογισμός απόστασης για τον μεσαίο ultrasonic Sensor
+void sensorRead () {
+  //Read front sensor value
+  digitalWrite(trigPinFront, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPinFront, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPinFront, LOW);
+  durationFront = pulseIn(echoPinFront, HIGH);
+  distanceFront = durationFront * 0.034 / 2;
+}
+
+//Διαβασμα και υπολογισμός απόστασης για τον αριστερό ultrasonic Sensor
+void sensorReadLeft () {
+  //Read front sensor value
+  digitalWrite(trigPinLeft, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPinLeft, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPinLeft, LOW);
+  durationLeft = pulseIn(echoPinLeft, HIGH);
+  distanceLeft = durationLeft * 0.034 / 2;
+}
+
+//Διαβασμα και υπολογισμός απόστασης για τον δεξί ultrasonic Sensor
+void sensorReadRight () {
+  //Read front sensor value
+  digitalWrite(trigPinRight, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPinRight, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPinRight, LOW);
+  durationRight = pulseIn(echoPinRight, HIGH);
+  distanceRight = durationRight * 0.034 / 2;
+}
+
+//Διαβασμα και υπολογισμός απόστασης για τον ultrasonic Sensor που βλέπει κάτω
+void sensorReadDown () {
+  //Read front sensor value
+  digitalWrite(trigPinDown, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPinDown, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPinDown, LOW);
+  durationDown = pulseIn(echoPinDown, HIGH);
+  distanceDown = durationDown * 0.034 / 2;
+}
+
+//Οδηγίες για κίνηση μπροστά
+void goStraight()
+{
+  digitalWrite(L1, LOW);
+  digitalWrite(L2, HIGH);
+  analogWrite (enA, 100);
+  digitalWrite(L3, HIGH);
+  digitalWrite(L4, LOW);
+  analogWrite (enB, 100);
+  delay(500);
+  digitalWrite(L1, LOW);
+  digitalWrite(L2, LOW);
+  digitalWrite(L3, LOW);
+  digitalWrite(L4, LOW);
+  
+  
+}
+
+// για στροφή δεξιά
+void turnRight()
+{
+  digitalWrite(L1, LOW);
+  digitalWrite(L2, HIGH);
+  analogWrite (enA, 100);
+  digitalWrite(L3, LOW);
+  digitalWrite(L4, LOW);
+  analogWrite (enB, 100);
+  delay(500);
+  digitalWrite(L1, LOW);
+  digitalWrite(L2, LOW);
+  digitalWrite(L3, LOW);
+  digitalWrite(L4, LOW);
+  
+  
+}
+
+// για στροφή αριστερά
+void turnLeft()
+{
+  digitalWrite(L1, HIGH);
+  digitalWrite(L2, LOW);
+  analogWrite (enA, 100);
+  digitalWrite(L3, LOW);
+  digitalWrite(L4, LOW);
+  analogWrite (enB, 100);
+  delay(500);
+  digitalWrite(L1, LOW);
+  digitalWrite(L2, LOW);
+  digitalWrite(L3, LOW);
+  digitalWrite(L4, LOW);
+  
+  
+}
+
+// για κίνηση προσ τα πίσω 
+void goBack()
+{
+  digitalWrite(L1, HIGH);
+  digitalWrite(L2, LOW);
+  analogWrite (enA, 100);
+  digitalWrite(L3, LOW);
+  digitalWrite(L4, HIGH);
+  analogWrite (enB, 100);
+  delay(500);
+  digitalWrite(L1, LOW);
+  digitalWrite(L2, LOW);
+  digitalWrite(L3, LOW);
+  digitalWrite(L4, LOW);
+  
+  
+}
+
+// και για σταμάτημα
+void stop()
+{
+  digitalWrite(L1, LOW);
+  digitalWrite(L2, LOW);
+  analogWrite (enA, 100);
+  digitalWrite(L3, LOW);
+  digitalWrite(L4, LOW);
+  analogWrite (enB, 100);
+}
+
